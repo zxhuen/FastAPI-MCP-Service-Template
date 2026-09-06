@@ -1,6 +1,6 @@
-# Inventory MCP
+# FastAPI MCP Service Template
 
-Inventory MCP is a Python service that exposes the same product inventory through two interfaces:
+FastAPI MCP Service Template is a Python starter project that exposes product data through two interfaces:
 
 - A REST API built with FastAPI.
 - An MCP server built with FastMCP, so MCP-compatible clients and an AI assistant can manage products through structured tools.
@@ -33,7 +33,7 @@ The application stores products in PostgreSQL with SQLAlchemy and Alembic. The o
 ## Project Layout
 
 ```text
-inventory-mcp/
+fastapi-mcp-service-template/
 |-- app/
 |   |-- main.py                         # FastAPI application
 |   |-- api/
@@ -47,7 +47,7 @@ inventory-mcp/
 |   |-- mcp_server/
 |   |   |-- server.py                    # MCP server entry point
 |   |   |-- mcp_client.py                # Gemini-to-MCP bridge
-|   |   |-- tools/product_tools.py       # Inventory MCP tools
+|   |   |-- tools/product_tools.py       # Product MCP tools
 |   |   `-- prompts/inventory_assistant.md
 |   |-- models/Products.py               # SQLAlchemy product model
 |   |-- schemas/Products.py              # Pydantic request schema
@@ -261,7 +261,7 @@ POST /Chat/assistant?message=<natural-language-request>
 curl -X POST "http://127.0.0.1:8000/Chat/assistant?message=How%20many%20keyboards%20are%20in%20stock%3F"
 ```
 
-The endpoint sends the message to Gemini. Gemini can call the inventory MCP tools, and the final assistant response is returned as text. The bridge allows at most five Gemini/MCP tool rounds for one request.
+The endpoint sends the message to Gemini. Gemini can call the product MCP tools, and the final assistant response is returned as text. The bridge allows at most five Gemini/MCP tool rounds for one request.
 
 ## MCP Server
 
@@ -293,10 +293,10 @@ The exact configuration format depends on the MCP client. A client that supports
 ```json
 {
 	"mcpServers": {
-		"inventory": {
-			"command": "C:\\path\\to\\inventory-mcp\\venv\\Scripts\\python.exe",
+		"product-service": {
+			"command": "C:\\path\\to\\fastapi-mcp-service-template\\venv\\Scripts\\python.exe",
 			"args": ["-m", "app.mcp_server.server"],
-			"cwd": "C:\\path\\to\\inventory-mcp"
+			"cwd": "C:\\path\\to\\fastapi-mcp-service-template"
 		}
 	}
 }
