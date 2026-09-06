@@ -8,6 +8,7 @@ from mcp.client.stdio import stdio_client
 from pytest import Session
 
 from app.ai.providers.gemini import client
+
 from app.core.database import get_db
 
 # --------------------------------------------------
@@ -49,7 +50,6 @@ def build_tool_config() -> types.ToolConfig:
     return types.ToolConfig(
         function_calling_config=types.FunctionCallingConfig(
             mode=types.FunctionCallingConfigMode.AUTO,
-            allowed_function_names=ALLOWED_INVENTORY_TOOLS,
         )
     )
 
@@ -78,10 +78,6 @@ def convert_mcp_tools_to_gemini(mcp_tools) -> list[types.Tool]:
 
 
 def mcp_result_to_text(result) -> str:
-    """
-    Convert MCP tool result content into plain text.
-    """
-
     text_parts = []
 
     for content in result.content:
@@ -99,10 +95,6 @@ def mcp_result_to_text(result) -> str:
 
 
 def get_function_calls(response):
-    """
-    Safely get Gemini function calls.
-    """
-
     return response.function_calls or []
 
 
@@ -116,10 +108,6 @@ async def execute_tool(
     tool_name: str,
     tool_args: dict,
 ) -> dict:
-    """
-    Execute one MCP tool and convert its result
-    into a format Gemini can understand.
-    """
 
     if tool_name not in ALLOWED_INVENTORY_TOOLS:
         return {"error": f"Tool '{tool_name}' is not allowed."}
@@ -132,14 +120,17 @@ async def execute_tool(
 
         result_text = mcp_result_to_text(result)
 
-        print(f"[MCP] Tool: {tool_name}")
-        print(f"[MCP] Args: {tool_args}")
-        print(f"[MCP] Result: {result_text}")
+        print(f"[MCP] Tool: {tool_name}", file=sys.stderr)
+        print(f"[MCP] Args: {tool_args}", file=sys.stderr)
+        print(f"[MCP] Result: {result_text}", file=sys.stderr)
 
         return {"result": result_text}
 
     except Exception as exc:
-        print(f"[MCP] Tool '{tool_name}' failed: {exc}")
+        print(
+            f"[MCP] Tool '{tool_name}' failed: {exc}",
+            file=sys.stderr,
+        )
 
         return {"error": str(exc)}
 
@@ -179,18 +170,21 @@ async def chat(prompt: str, db: Session = Depends(get_db)) -> str:
 
         async with ClientSession(read, write) as session:
 
-            # 1. Initialize MCP
+            # Initialize MCP
             await session.initialize()
 
-            # 2. Get available MCP tools
+            # Get MCP tools
             mcp_response = await session.list_tools()
 
-            # 3. Convert MCP tools → Gemini tools
+            # Convert MCP tools → Gemini tools
             gemini_tools = convert_mcp_tools_to_gemini(mcp_response.tools)
 
-            print("[MCP] Available tools:", [tool.name for tool in mcp_response.tools])
+            print(
+                "[MCP] Available tools:",
+                [tool.name for tool in mcp_response.tools],
+            )
 
-            # 4. Initial user message
+            # Initial user message
             contents = [
                 types.Content(
                     role="user",
@@ -198,7 +192,7 @@ async def chat(prompt: str, db: Session = Depends(get_db)) -> str:
                 )
             ]
 
-            # 5. Gemini ↔ MCP loop
+            # Gemini ↔ MCP loop
             for round_number in range(1, MAX_TOOL_ROUNDS + 1):
 
                 print(f"[Gemini] Tool round {round_number}")
@@ -216,7 +210,7 @@ async def chat(prompt: str, db: Session = Depends(get_db)) -> str:
                 function_calls = get_function_calls(response)
 
                 # ------------------------------------------
-                # Gemini produced a normal text response
+                # Gemini produced final text
                 # ------------------------------------------
 
                 if not function_calls:
@@ -240,12 +234,13 @@ async def chat(prompt: str, db: Session = Depends(get_db)) -> str:
                 contents.append(assistant_content)
 
                 # ------------------------------------------
-                # Execute requested tools
+                # Execute tools
                 # ------------------------------------------
 
                 for function_call in function_calls:
 
                     tool_name = function_call.name
+
                     tool_args = function_call.args or {}
 
                     tool_result = await execute_tool(
@@ -260,11 +255,8 @@ async def chat(prompt: str, db: Session = Depends(get_db)) -> str:
                         tool_result=tool_result,
                     )
 
-            # ------------------------------------------
-            # Prevent silent None
-            # ------------------------------------------
-
             return (
-                "I couldn't complete the requested operation "
-                f"within {MAX_TOOL_ROUNDS} tool rounds."
+                "I couldn't complete the requested "
+                f"operation within {MAX_TOOL_ROUNDS} "
+                "tool rounds."
             )
