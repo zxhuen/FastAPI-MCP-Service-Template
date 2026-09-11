@@ -30,7 +30,10 @@ ALLOWED_INVENTORY_TOOLS = [
     "lookup_product_by_name",
 ]
 
-
+# When you need the mcp server, it will start this python module
+# sys.executable = it uses the same python interpreter/venv(which is what I'm currently using). We want to start the mcp server in the same virtual environment
+# args = ["-m", "app.mcp_server.server"]       this just means "python -m app.mcp_server.server" which runs the server
+# cwd=str(BASE_DIR) just starts the mcp server from the project root
 server_params = StdioServerParameters(
     command=sys.executable,
     args=["-m", "app.mcp_server.server"],
