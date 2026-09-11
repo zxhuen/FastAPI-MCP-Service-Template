@@ -40,7 +40,7 @@ server_params = StdioServerParameters(
     cwd=str(BASE_DIR),
 )
 
-
+# providers can only call the tools 5x max, without this, it will call the tool more than 5 and providers usually return an exhaustion error if you're using a free one
 MAX_TOOL_ROUNDS = 5
 
 
