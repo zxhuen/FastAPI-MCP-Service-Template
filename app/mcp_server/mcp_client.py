@@ -5,7 +5,7 @@ from fastapi import Depends
 from google.genai import types
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from pytest import Session
+from sqlalchemy.orm import Session
 
 from app.ai.providers.gemini import client
 
