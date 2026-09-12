@@ -84,16 +84,25 @@ def convert_mcp_tools_to_gemini(mcp_tools) -> list[types.Tool]:
 # --------------------------------------------------
 
 
+# We need this function cause MCP doesn't return a tool result as a plain Python to string that's why we need to convert it to str
+# it takes the MCP response and extract all the text from it so gemini can work with normal string
 def mcp_result_to_text(result) -> str:
     text_parts = []
 
+    # result is a mcp result object
+    # why for loop ? Because it handles the fact that MCP can return multiple content items and I just need the one that has a text field in it
     for content in result.content:
-        text = getattr(content, "text", None)
+        # instead of .text, I used getattr cause .text will return an exception if there's no text
+        text = getattr(
+            content, "text", None
+        )  # this means get the text attribute from the content, if it doesn't exist, return none
 
         if text:
             text_parts.append(text)
 
-    return "\n".join(text_parts)
+    return "\n".join(
+        text_parts
+    )  # just takes every item in text_parts and combine them into one string putting a new line between each item
 
 
 # --------------------------------------------------
