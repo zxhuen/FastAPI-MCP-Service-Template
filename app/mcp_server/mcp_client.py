@@ -59,10 +59,12 @@ def build_tool_config() -> types.ToolConfig:
     )
 
 
+# this converts my mcp tools to gemini tools. My mcp server has tools but gemini doesn't understand MCP tool format
 def convert_mcp_tools_to_gemini(mcp_tools) -> list[types.Tool]:
     declarations = []
 
     for tool in mcp_tools:
+        # if tools.name is not in my list of tools, then continue (skip the current tool and move to the next one)
         if tool.name not in ALLOWED_INVENTORY_TOOLS:
             continue
 
