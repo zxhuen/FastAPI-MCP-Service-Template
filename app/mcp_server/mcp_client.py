@@ -49,6 +49,8 @@ MAX_TOOL_ROUNDS = 5
 # --------------------------------------------------
 
 
+# this function builds gemini's tool calling configuration so gemini can decide whether it needs to call a function or tool
+# ex. can you add a keyboard ? -> gemini will call the add product
 def build_tool_config() -> types.ToolConfig:
     return types.ToolConfig(
         function_calling_config=types.FunctionCallingConfig(
