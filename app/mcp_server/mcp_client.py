@@ -168,13 +168,24 @@ async def execute_tool(
 # --------------------------------------------------
 
 
+# this function builds the message that gets sent back to gemini after my MCP tool finishes. It packages the result in the format that gemini expects
+# contents: This is the history of my chat with gemini, it's just stored in the memory and not in database. I feel like I don't need to do that since it's
+# purpose is to just chat and do the stuff that I tell gemini to do so I think not storing it in the database is the right thing
+
+
+# tool name: it's just the name of the tool that mcp executed
+# the tool_result is just the result from execute_tool() which may contain {"result": "Keyboard - ₱500\nMouse - ₱300"}
 def append_tool_result(
     contents: list,
     tool_name: str,
     tool_result: dict,
 ) -> None:
 
+    # contents.append is an action that adds a new intem to the conversation history
     contents.append(
+        # inside this is constructing the gemini object type
+        # role = "tool" is just telling gemini that this piece of content is a response from tool
+        # parts[] = gemini content can contain one or more parts and for this one, the parts consist of name, and response which gemini can make a response from that
         types.Content(
             role="tool",
             parts=[
