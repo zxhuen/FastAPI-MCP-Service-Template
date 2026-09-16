@@ -120,6 +120,9 @@ def get_function_calls(response):
 # --------------------------------------------------
 
 
+# note: Client Session is the connection to the MCP server
+# tool_name is the name of the MCP tool that gemini wants to use
+# tool_args is the arguments gemini wants to send to that tool ex. {"name": "Keyboard", "price": 30}
 async def execute_tool(
     session: ClientSession,
     tool_name: str,
