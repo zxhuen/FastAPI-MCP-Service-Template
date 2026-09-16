@@ -84,19 +84,21 @@ def convert_mcp_tools_to_gemini(mcp_tools) -> list[types.Tool]:
 # --------------------------------------------------
 
 
-# We need this function cause MCP doesn't return a tool result as a plain Python to string that's why we need to convert it to str
+# I need this function cause MCP doesn't return a tool result as a plain Python to string that's why we need to convert it to str
 # it takes the MCP response and extract all the text from it so gemini can work with normal string
 def mcp_result_to_text(result) -> str:
     text_parts = []
 
     # result is a mcp result object
     # why for loop ? Because it handles the fact that MCP can return multiple content items and I just need the one that has a text field in it
+    # ex. text = '{"id": "...", "name": "Keyboard"}', text = '{"id": "...", "name": "mouse"}'
     for content in result.content:
         # instead of .text, I used getattr cause .text will return an exception if there's no text
         text = getattr(
             content, "text", None
         )  # this means get the text attribute from the content, if it doesn't exist, return none
 
+        # if text exist, then append it to text_parts
         if text:
             text_parts.append(text)
 
@@ -129,21 +131,27 @@ async def execute_tool(
     tool_args: dict,
 ) -> dict:
 
+    # this is just an allow list for the tool, if the tool/function is not allowed, then it will return
     if tool_name not in ALLOWED_INVENTORY_TOOLS:
         return {"error": f"Tool '{tool_name}' is not allowed."}
 
     try:
+        # this calls the MCP tool, I just need to list the tool name that gemini wanted to use and then and the arguments as well which is for example
+        # I want to add a keyboard which is 30$, then gemini will call add_product and for the args, he will list {"name": "Keyboard", "price": 30}
         result = await session.call_tool(
             tool_name,
             arguments=tool_args,
         )
 
+        # I just call the mcp_result_to_text converter function and store the result in result_text, what it does is it extracts the text
         result_text = mcp_result_to_text(result)
 
+        # just prints the tool_name, tool_args, and the result text which is a string since I converted it
         print(f"[MCP] Tool: {tool_name}", file=sys.stderr)
         print(f"[MCP] Args: {tool_args}", file=sys.stderr)
         print(f"[MCP] Result: {result_text}", file=sys.stderr)
 
+        # returns the result_text
         return {"result": result_text}
 
     except Exception as exc:
