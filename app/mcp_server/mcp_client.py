@@ -110,6 +110,7 @@ def mcp_result_to_text(result) -> str:
 # --------------------------------------------------
 
 
+# this just returns the functions that I listed for gemini and if the response.function_calls has false value, then return an empty list
 def get_function_calls(response):
     return response.function_calls or []
 
