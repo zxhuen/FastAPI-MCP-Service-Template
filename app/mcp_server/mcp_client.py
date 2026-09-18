@@ -218,21 +218,28 @@ async def chat(prompt: str) -> str:
         # so the session becomes my interface for communicating with the MCP server
         async with ClientSession(read, write) as session:
 
-            # Initialize MCP
+            # This performs the MCP initialization handshake, I need to do this before doing normal MCP operations
             await session.initialize()
 
-            # Get MCP tools
+            # now I just need to get the tools from my MCP server which I registered on server.py
+            # but the most important part is MCP doesn't just return the names of my tools, it returns the schemas as well describing how the tool should be called
+            # like for example in add products, you need name, description, price........ as an arguement because gemini need thjose information to know how it can call the tools
             mcp_response = await session.list_tools()
 
-            # Convert MCP tools → Gemini tools
+            # this line converts MCP tools to gemini tools. This is called an adapter layer. MCP and Gemini doesn't use exactly the same tool representation.
             gemini_tools = convert_mcp_tools_to_gemini(mcp_response.tools)
 
+            # this just prints the tool available in my mcp server
             print(
                 "[MCP] Available tools:",
                 [tool.name for tool in mcp_response.tools],
             )
 
-            # Initial user message
+            # Here, I just create the conversation contents. Let's say I send "Add a keyboard called wooting 60he with 10 stocks"
+            # we just create something like user: Add a keyboard called wooting 60he with 10 stocks
+            # types.content represents a message and role means this message came from the user
+            # for the parts again, gemini message can contain multiple parts like text, image, function call, function response
+            # types.Part.from_text(text=prompt) converts my python string into gemini content part so my prompt becomes a gemini compatible text object
             contents = [
                 types.Content(
                     role="user",
@@ -240,9 +247,14 @@ async def chat(prompt: str) -> str:
                 )
             ]
 
-            # Gemini ↔ MCP loop
+            # This one starts the gemini <-> MCP loop
+            # I'm allowing gemini to use tools multiple times but why multiple rounds instead of just one round ?
+            # because one user request might require several operations like for example, "delete all products that are out of stock."
+            # gemini might need to list the products, then delete product id(1), delete product id(2)............
+            # without a loop, I'm only allowing gemini to call one tool
             for round_number in range(1, MAX_TOOL_ROUNDS + 1):
 
+                # this just logs the current round just for debugging
                 print(f"[Gemini] Tool round {round_number}")
 
                 response = await client.aio.models.generate_content(
