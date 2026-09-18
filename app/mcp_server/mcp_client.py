@@ -204,7 +204,7 @@ def append_tool_result(
 
 
 # This chat function is being used my an api router so I could interact with it on frontend
-async def chat(prompt: str, db: Session = Depends(get_db)) -> str:
+async def chat(prompt: str) -> str:
 
     async with stdio_client(server_params) as (read, write):
 
