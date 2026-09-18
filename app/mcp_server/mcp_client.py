@@ -204,8 +204,14 @@ def append_tool_result(
 
 
 # This chat function is being used my an api router so I could interact with it on frontend
+# prompt contains stuff like "can you list all my products ?"
 async def chat(prompt: str) -> str:
-
+    # this line starts the mcp client connection using stdio transport
+    # stdio_client() establishes communication between my application and the mcp server
+    # read and write are the communcation streams and MCP needs communcation channels and that is read and write
+    # read = receives something from MCP
+    # write = sends something to MCP
+    # I don't need to manipulate them much because ClientSession handles it for me
     async with stdio_client(server_params) as (read, write):
 
         async with ClientSession(read, write) as session:
