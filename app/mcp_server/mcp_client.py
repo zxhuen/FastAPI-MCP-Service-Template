@@ -257,6 +257,15 @@ async def chat(prompt: str) -> str:
                 # this just logs the current round just for debugging
                 print(f"[Gemini] Tool round {round_number}")
 
+                # this sends the current conversation to gemini. I'm not sending the original message anymore since after the tool have been used, contents contains the entire
+                # conversation history needed for gemini to understand what happened
+                # ex. User: Add Keyboard
+                # Gemini: Call add_product()
+                # Tool: Product added successfully
+                # gemini sees all of this when I call generate_content() again and that is how the loop works
+                # tools = give gemini the allowed tools
+                # system_instruction = give gemini system the instruction for her behavior
+                # tool_config contains tool calling configuration, it restricts gemini to specific tools or control how tools are called aor generated
                 response = await client.aio.models.generate_content(
                     model="gemini-2.5-flash",
                     contents=contents,
