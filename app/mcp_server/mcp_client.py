@@ -278,12 +278,11 @@ async def chat(prompt: str) -> str:
 
                 # gemini can return either normal answer like "we currently have 12 products" or a tool request like call: list_products()
                 # get_function_calls extracts all those requested function calls from the gemini response
+                # I only need to get the function call since I need those to get executed
                 function_calls = get_function_calls(response)
 
-                # ------------------------------------------
-                # Gemini produced final text
-                # ------------------------------------------
-
+                # this checks if gemini is finished. If gemini didn't request any tools, then gemini probably produced the final response
+                # we get the text ex. "Added keyboard successfully" then we return it, if it doesn't exist, return something else
                 if not function_calls:
 
                     text = response.text
