@@ -303,30 +303,33 @@ async def chat(prompt: str) -> str:
                 # I'm storing gemini's entire assistant content
                 assistant_content = response.candidates[0].content
 
+                # now I just store it to my contents so now = [USER: "list all my products" MODEL: list_products()]
+                # if I didn't append this, gemini wouldn't have the complete conversation context when I call it again
                 contents.append(assistant_content)
 
-                # ------------------------------------------
-                # Execute tools
-                # ------------------------------------------
-
+                # now I execute the tools, I did a for loop cause Gemini can potentially request multiple tools in one response
+                # ex. call 1: list_product(), call 2: get_product(id) so I loop throught them
                 for function_call in function_calls:
-
+                    # I just get the tool name then needed to be executed
                     tool_name = function_call.name
-
+                    # then get the tool arguements ex. add_product() args might be {"id", "name", "stock"} if there are no args then {}
                     tool_args = function_call.args or {}
-
+                    # now I execute the MCP tool, this is where the mcp client tells mcp server to exectue this tool
                     tool_result = await execute_tool(
                         session=session,
                         tool_name=tool_name,
                         tool_args=tool_args,
                     )
-
+                    # then add the tool result to the conversation
+                    # the tool result needs to be sent back to gemini ex. {"name": "Keyboard"} so this function helper converts this into a gemini compatible function response
                     append_tool_result(
                         contents=contents,
                         tool_name=tool_name,
                         tool_result=tool_result,
                     )
 
+            # this return will happen if gemini keeps requesting tools until the maximum is reached. I do have 5 max tool rounds so if gemini never produces the final answer
+            # after 5 attempts, then I stop the loop rather than letting it continue infinitely
             return (
                 "I couldn't complete the requested "
                 f"operation within {MAX_TOOL_ROUNDS} "
