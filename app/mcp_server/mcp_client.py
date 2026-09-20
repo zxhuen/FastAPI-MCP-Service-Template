@@ -276,6 +276,8 @@ async def chat(prompt: str) -> str:
                     ),
                 )
 
+                # gemini can return either normal answer like "we currently have 12 products" or a tool request like call: list_products()
+                # get_function_calls extracts all those requested function calls from the gemini response
                 function_calls = get_function_calls(response)
 
                 # ------------------------------------------
