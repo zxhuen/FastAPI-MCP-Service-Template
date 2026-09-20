@@ -292,13 +292,15 @@ async def chat(prompt: str) -> str:
 
                     return "Gemini returned an empty response."
 
-                # ------------------------------------------
-                # Gemini requested tools
-                # ------------------------------------------
-
+                # this make sures that gemini gave candidates(tools like list_products())
+                # I'm just checking if gemini returned a candidate cause if ot doesn't, it will return an index error
                 if not response.candidates:
                     return "Gemini returned no candidates."
 
+                # now I will just get the first index content of the gemini's response candidate
+                # gemini could respond "I need to call list products" but internally, the response is structured like
+                # content(role="Model", parts[...])
+                # I'm storing gemini's entire assistant content
                 assistant_content = response.candidates[0].content
 
                 contents.append(assistant_content)
