@@ -216,6 +216,7 @@ async def chat(prompt: str) -> str:
         # This line creates MCP ClientSession. Now I'm wrapping the communication streams which is the read and write in a MCP session
         # Instead of manually dealing with JSON-RPC messages, I can just do wait session.initialize() and await session.list_tools()
         # so the session becomes my interface for communicating with the MCP server
+        # It also builds mcp-aware client, without this, I will need to basically deal with the low level communication by myself, but with ClientSession, I don't need to do that
         async with ClientSession(read, write) as session:
 
             # This performs the MCP initialization handshake, I need to do this before doing normal MCP operations
