@@ -225,6 +225,7 @@ async def chat(prompt: str) -> str:
             # now I just need to get the tools from my MCP server which I registered on server.py
             # but the most important part is MCP doesn't just return the names of my tools, it returns the schemas as well describing how the tool should be called
             # like for example in add products, you need name, description, price........ as an arguement because gemini need thjose information to know how it can call the tools
+            # it sends a request to my mcp server to get the tools that I registered there
             mcp_response = await session.list_tools()
 
             # this line converts MCP tools to gemini tools. This is called an adapter layer. MCP and Gemini doesn't use exactly the same tool representation.
