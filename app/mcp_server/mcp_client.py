@@ -229,6 +229,7 @@ async def chat(prompt: str) -> str:
             mcp_response = await session.list_tools()
 
             # this line converts MCP tools to gemini tools. This is called an adapter layer. MCP and Gemini doesn't use exactly the same tool representation.
+            # do take not that gemini doesn't directly call the tool, it just decides which tool to call
             gemini_tools = convert_mcp_tools_to_gemini(mcp_response.tools)
 
             # this just prints the tool available in my mcp server
