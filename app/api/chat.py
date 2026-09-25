@@ -16,5 +16,5 @@ router = APIRouter(prefix="/Chat", tags=["Chat"])
 async def chat_with_assistant(
     request: Request, message: str, db: Session = Depends(get_db)
 ):
-    response = await chat(message, db)
+    response = await chat(message)
     return response
